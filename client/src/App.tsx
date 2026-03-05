@@ -2,19 +2,25 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Router, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { BillProvider } from "./contexts/BillContext";
 import Home from "./pages/Home";
 
-function Router() {
+// Derive the base path from Vite's import.meta.env.BASE_URL so routing
+// works both locally (base = "/") and on GitHub Pages (base = "/BillSplitter/").
+const base = import.meta.env.BASE_URL.replace(/\/$/, ""); // strip trailing slash
+
+function AppRouter() {
   return (
-    <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      <Route component={NotFound} />
-    </Switch>
+    <Router base={base}>
+      <Switch>
+        <Route path="/" component={Home} />
+        <Route path="/404" component={NotFound} />
+        <Route component={NotFound} />
+      </Switch>
+    </Router>
   );
 }
 
@@ -25,7 +31,7 @@ function App() {
         <BillProvider>
           <TooltipProvider>
             <Toaster />
-            <Router />
+            <AppRouter />
           </TooltipProvider>
         </BillProvider>
       </ThemeProvider>
