@@ -46,6 +46,7 @@ export interface BillRecord {
 /** GitHub Gist settings stored in localStorage */
 export interface GistSettings {
   token: string;       // GitHub personal access token
+  gistId?: string;     // ID of the persistent auto-sync Gist
 }
 
 export interface PersonBalance {

@@ -1,9 +1,11 @@
 // Design: Ledger Craft — Swiss typographic fintech aesthetic
-// BillsContext: manages the list of bills, active bill, and Gist settings
+// BillsContext: manages the list of bills, active bill, and auto-sync Gist settings
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
 import { nanoid } from "nanoid";
 import type { BillRecord, BillState, GistSettings } from "@/lib/types";
+import { syncBillsToGist } from "@/lib/gist";
+import { toast } from "sonner";
 
 const DEFAULT_BILL: BillState = { title: "New Trip", people: [], expenses: [] };
 const BILLS_KEY = "bill-splitter-bills";
@@ -57,12 +59,14 @@ interface BillsContextValue {
   activeId: string;
   activeBill: BillState;
   gistSettings: GistSettings;
+  gistSyncing: boolean;
 
   // Bill list management
   createBill: () => string;
   deleteBill: (id: string) => void;
   switchBill: (id: string) => void;
   duplicateBill: (id: string) => string;
+  replaceBills: (bills: BillRecord[]) => void;
 
   // Active bill mutations (mirrors old BillContext API)
   updateTitle: (title: string) => void;
@@ -77,7 +81,6 @@ interface BillsContextValue {
 
   // Gist
   saveGistSettings: (settings: GistSettings) => void;
-  setGistId: (billId: string, gistId: string) => void;
 }
 
 const BillsContext = createContext<BillsContextValue | null>(null);
@@ -86,6 +89,12 @@ export function BillsProvider({ children }: { children: React.ReactNode }) {
   const [bills, setBills] = useState<BillRecord[]>(loadBills);
   const [activeId, setActiveId] = useState<string>(() => loadActiveId(loadBills()));
   const [gistSettings, setGistSettings] = useState<GistSettings>(loadGistSettings);
+  const [gistSyncing, setGistSyncing] = useState(false);
+
+  // Debounce timer ref for auto-sync
+  const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Track the current gist ID so we can PATCH the same one
+  const gistIdRef = useRef<string | undefined>(gistSettings.gistId);
 
   // Persist bills
   useEffect(() => {
@@ -100,7 +109,36 @@ export function BillsProvider({ children }: { children: React.ReactNode }) {
   // Persist gist settings
   useEffect(() => {
     localStorage.setItem(GIST_KEY, JSON.stringify(gistSettings));
+    gistIdRef.current = gistSettings.gistId;
   }, [gistSettings]);
+
+  // Auto-sync: whenever bills change and a token is set, debounce a Gist sync
+  useEffect(() => {
+    if (!gistSettings.token) return;
+
+    if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
+
+    syncTimerRef.current = setTimeout(async () => {
+      setGistSyncing(true);
+      const result = await syncBillsToGist(bills, gistSettings.token, gistIdRef.current);
+      setGistSyncing(false);
+
+      if (result.ok) {
+        // Store the Gist ID if it's new
+        if (result.gistId !== gistIdRef.current) {
+          gistIdRef.current = result.gistId;
+          setGistSettings((prev) => ({ ...prev, gistId: result.gistId }));
+        }
+      } else {
+        toast.error("Gist sync failed", { description: result.error });
+      }
+    }, 2000);
+
+    return () => {
+      if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bills, gistSettings.token]);
 
   const activeBill = bills.find((b) => b.id === activeId)?.bill ?? DEFAULT_BILL;
 
@@ -220,15 +258,14 @@ export function BillsProvider({ children }: { children: React.ReactNode }) {
     return record.id;
   }, [bills]);
 
+  const replaceBills = useCallback((newBills: BillRecord[]) => {
+    setBills(newBills);
+    setActiveId(newBills[0]?.id ?? "");
+  }, []);
+
   // ── Gist ─────────────────────────────────────────────────────────────────
   const saveGistSettings = useCallback((settings: GistSettings) => {
     setGistSettings(settings);
-  }, []);
-
-  const setGistId = useCallback((billId: string, gistId: string) => {
-    setBills((prev) =>
-      prev.map((r) => (r.id === billId ? { ...r, gistId } : r))
-    );
   }, []);
 
   return (
@@ -238,10 +275,12 @@ export function BillsProvider({ children }: { children: React.ReactNode }) {
         activeId,
         activeBill,
         gistSettings,
+        gistSyncing,
         createBill,
         deleteBill,
         switchBill,
         duplicateBill,
+        replaceBills,
         updateTitle,
         addPerson,
         removePerson,
@@ -252,7 +291,6 @@ export function BillsProvider({ children }: { children: React.ReactNode }) {
         resetBill,
         importBill,
         saveGistSettings,
-        setGistId,
       }}
     >
       {children}

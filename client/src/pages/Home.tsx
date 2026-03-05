@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   Plus, RotateCcw, Pencil, Check, Users, ReceiptText,
-  Calculator, Download, Upload, Github,
+  Calculator, Download, Upload, Github, Cloud, CloudOff, Loader2,
 } from "lucide-react";
 import { downloadCsv } from "@/lib/exportCsv";
 import ImportDialog from "@/components/ImportDialog";
@@ -40,7 +40,7 @@ import { toast } from "sonner";
 import { formatCurrency } from "@/lib/calculations";
 
 export default function Home() {
-  const { activeBill: bill, updateTitle, resetBill, importBill } = useBills();
+  const { activeBill: bill, updateTitle, resetBill, importBill, gistSettings, gistSyncing } = useBills();
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(bill.title);
@@ -110,14 +110,22 @@ export default function Home() {
 
           {/* Header actions */}
           <div className="flex items-center gap-1">
-            {/* GitHub Gist */}
+            {/* GitHub Gist — shows sync status */}
             <button
               onClick={() => setShowGist(true)}
               className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors shrink-0 px-2 py-1 rounded hover:bg-muted"
-              title="GitHub Gist"
+              title={gistSettings.token ? (gistSyncing ? "Syncing to Gist…" : "Synced to Gist · click to configure") : "Configure GitHub Gist auto-sync"}
             >
-              <Github className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Gist</span>
+              {gistSyncing ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-500" />
+              ) : gistSettings.token ? (
+                <Cloud className="w-3.5 h-3.5 text-emerald-500" />
+              ) : (
+                <CloudOff className="w-3.5 h-3.5" />
+              )}
+              <span className="hidden sm:inline">
+                {gistSettings.token ? (gistSyncing ? "Syncing…" : "Synced") : "Gist"}
+              </span>
             </button>
 
             {/* Import CSV */}
