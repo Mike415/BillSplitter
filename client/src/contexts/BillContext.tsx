@@ -15,6 +15,7 @@ interface BillContextValue {
   removeExpense: (id: string) => void;
   updateTitle: (title: string) => void;
   resetBill: () => void;
+  importBill: (newBill: BillState) => void;
 }
 
 const defaultBill: BillState = {
@@ -96,6 +97,10 @@ export function BillProvider({ children }: { children: React.ReactNode }) {
     setBill(defaultBill);
   }, []);
 
+  const importBill = useCallback((newBill: BillState) => {
+    setBill(newBill);
+  }, []);
+
   return (
     <BillContext.Provider
       value={{
@@ -108,6 +113,7 @@ export function BillProvider({ children }: { children: React.ReactNode }) {
         removeExpense,
         updateTitle,
         resetBill,
+        importBill,
       }}
     >
       {children}

@@ -28,17 +28,19 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Plus, RotateCcw, Pencil, Check, Users, ReceiptText, Calculator, Download } from "lucide-react";
+import { Plus, RotateCcw, Pencil, Check, Users, ReceiptText, Calculator, Download, Upload } from "lucide-react";
 import { downloadCsv } from "@/lib/exportCsv";
+import ImportDialog from "@/components/ImportDialog";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/calculations";
 
 export default function Home() {
-  const { bill, updateTitle, resetBill } = useBill();
+  const { bill, updateTitle, resetBill, importBill } = useBill();
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(bill.title);
   const [activeTab, setActiveTab] = useState<"ledger" | "summary">("ledger");
+  const [showImport, setShowImport] = useState(false);
 
   const commitTitle = () => {
     if (titleDraft.trim()) updateTitle(titleDraft.trim());
@@ -99,6 +101,16 @@ export default function Home() {
               </button>
             )}
           </div>
+
+          {/* Import CSV */}
+          <button
+            onClick={() => setShowImport(true)}
+            className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors shrink-0 px-2 py-1 rounded hover:bg-muted"
+            title="Import from CSV"
+          >
+            <Upload className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Import</span>
+          </button>
 
           {/* Export CSV */}
           {bill.expenses.length > 0 && (
@@ -259,6 +271,18 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Import Dialog */}
+      <ImportDialog
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        onImport={(newBill) => {
+          importBill(newBill);
+          toast.success("Bill imported", {
+            description: `${newBill.title} — ${newBill.expenses.length} expense${newBill.expenses.length !== 1 ? "s" : ""}`,
+          });
+        }}
+      />
 
       {/* Add Expense Dialog */}
       <Dialog open={showAddExpense} onOpenChange={setShowAddExpense}>
