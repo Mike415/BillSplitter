@@ -33,6 +33,21 @@ export interface BillState {
   expenses: Expense[];
 }
 
+/** A saved bill entry in the multi-bill list */
+export interface BillRecord {
+  id: string;          // nanoid
+  bill: BillState;
+  createdAt: number;
+  updatedAt: number;
+  /** If saved to a Gist, the Gist ID */
+  gistId?: string;
+}
+
+/** GitHub Gist settings stored in localStorage */
+export interface GistSettings {
+  token: string;       // GitHub personal access token
+}
+
 export interface PersonBalance {
   personId: string;
   name: string;

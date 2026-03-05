@@ -2,14 +2,14 @@
 // People manager: add, rename, remove participants
 
 import { useState } from "react";
-import { useBill } from "@/contexts/BillContext";
+import { useBills } from "@/contexts/BillsContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { X, UserPlus, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function PeopleManager() {
-  const { bill, addPerson, removePerson, updatePersonName } = useBill();
+  const { activeBill: bill, addPerson, removePerson, updatePersonName } = useBills();
   const { people, expenses } = bill;
   const [newName, setNewName] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);

@@ -5,7 +5,7 @@ import NotFound from "@/pages/NotFound";
 import { Route, Router, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import { BillProvider } from "./contexts/BillContext";
+import { BillsProvider } from "./contexts/BillsContext";
 import Home from "./pages/Home";
 
 // Derive the base path from Vite's import.meta.env.BASE_URL so routing
@@ -28,12 +28,12 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light">
-        <BillProvider>
+        <BillsProvider>
           <TooltipProvider>
             <Toaster />
             <AppRouter />
           </TooltipProvider>
-        </BillProvider>
+        </BillsProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

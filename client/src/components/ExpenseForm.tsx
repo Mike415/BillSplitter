@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useBill } from "@/contexts/BillContext";
+import { useBills } from "@/contexts/BillsContext";
 import type { Expense, SplitType, PersonSplit } from "@/lib/types";
 import { round2 } from "@/lib/calculations";
 
@@ -23,7 +23,7 @@ interface ExpenseFormProps {
 }
 
 export default function ExpenseForm({ editingExpense, onClose }: ExpenseFormProps) {
-  const { bill, addExpense, updateExpense } = useBill();
+  const { activeBill: bill, addExpense, updateExpense } = useBills();
   const { people } = bill;
 
   const [description, setDescription] = useState(editingExpense?.description ?? "");

@@ -2,7 +2,7 @@
 // Expense ledger list with edit/delete actions
 
 import { useState } from "react";
-import { useBill } from "@/contexts/BillContext";
+import { useBills } from "@/contexts/BillsContext";
 import { formatCurrency, computeExpenseShares } from "@/lib/calculations";
 import type { Expense } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,7 @@ import { Pencil, Trash2, ChevronDown, ChevronUp, Receipt } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function ExpenseList() {
-  const { bill, removeExpense } = useBill();
+  const { activeBill: bill, removeExpense } = useBills();
   const { expenses, people } = bill;
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);

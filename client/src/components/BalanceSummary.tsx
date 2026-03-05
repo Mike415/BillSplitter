@@ -1,7 +1,7 @@
 // Design: Ledger Craft — Swiss typographic fintech aesthetic
 // Balance summary: per-person totals, net balances, and minimum payment plan
 
-import { useBill } from "@/contexts/BillContext";
+import { useBills } from "@/contexts/BillsContext";
 import { computeBalances, computeMinimumPayments, formatCurrency } from "@/lib/calculations";
 import { downloadCsv } from "@/lib/exportCsv";
 import { ArrowRight, TrendingUp, TrendingDown, Minus, CheckCircle2, Users, Download } from "lucide-react";
@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 
 export default function BalanceSummary() {
-  const { bill } = useBill();
+  const { activeBill: bill } = useBills();
   const { people, expenses } = bill;
 
   if (people.length === 0) {
@@ -25,7 +25,7 @@ export default function BalanceSummary() {
 
   const balances = computeBalances(people, expenses);
   const payments = computeMinimumPayments(balances);
-  const totalExpenses = expenses.reduce((sum, e) => sum + e.totalAmount, 0);
+  const totalExpenses = expenses.reduce((sum: number, e) => sum + e.totalAmount, 0);
   const isSettled = payments.length === 0 && expenses.length > 0;
 
   const handleExport = () => {
