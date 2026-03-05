@@ -28,7 +28,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Plus, RotateCcw, Pencil, Check, Users, ReceiptText, Calculator } from "lucide-react";
+import { Plus, RotateCcw, Pencil, Check, Users, ReceiptText, Calculator, Download } from "lucide-react";
+import { downloadCsv } from "@/lib/exportCsv";
+import { toast } from "sonner";
 import { formatCurrency } from "@/lib/calculations";
 
 export default function Home() {
@@ -97,6 +99,23 @@ export default function Home() {
               </button>
             )}
           </div>
+
+          {/* Export CSV */}
+          {bill.expenses.length > 0 && (
+            <button
+              onClick={() => {
+                downloadCsv(bill);
+                toast.success("CSV exported", {
+                  description: `${bill.title} — ${bill.expenses.length} expense${bill.expenses.length !== 1 ? "s" : ""}`,
+                });
+              }}
+              className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors shrink-0 px-2 py-1 rounded hover:bg-muted"
+              title="Export to CSV"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Export CSV</span>
+            </button>
+          )}
 
           {/* Reset */}
           <AlertDialog>

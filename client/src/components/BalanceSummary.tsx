@@ -3,8 +3,10 @@
 
 import { useBill } from "@/contexts/BillContext";
 import { computeBalances, computeMinimumPayments, formatCurrency } from "@/lib/calculations";
-import { ArrowRight, TrendingUp, TrendingDown, Minus, CheckCircle2, Users } from "lucide-react";
+import { downloadCsv } from "@/lib/exportCsv";
+import { ArrowRight, TrendingUp, TrendingDown, Minus, CheckCircle2, Users, Download } from "lucide-react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 export default function BalanceSummary() {
   const { bill } = useBill();
@@ -25,6 +27,13 @@ export default function BalanceSummary() {
   const payments = computeMinimumPayments(balances);
   const totalExpenses = expenses.reduce((sum, e) => sum + e.totalAmount, 0);
   const isSettled = payments.length === 0 && expenses.length > 0;
+
+  const handleExport = () => {
+    downloadCsv(bill);
+    toast.success("CSV exported", {
+      description: `${bill.title} — ${bill.expenses.length} expense${bill.expenses.length !== 1 ? "s" : ""}`,
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -105,6 +114,17 @@ export default function BalanceSummary() {
             Owes money
           </span>
         </div>
+      )}
+
+      {/* Export button */}
+      {expenses.length > 0 && (
+        <button
+          onClick={handleExport}
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-dashed border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:border-foreground/40 hover:bg-muted/30 transition-all"
+        >
+          <Download className="w-4 h-4" />
+          Export Summary as CSV
+        </button>
       )}
 
       {/* Divider */}
